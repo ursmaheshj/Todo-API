@@ -1,6 +1,7 @@
 from rest_framework import generics,permissions
 from todo.models import Todo
-from .serializers import TodoSerializers
+from .serializers import TodoCompleteSerializers, TodoSerializers
+from django.utils import timezone
 
 # Create your views here.
 class TodoCompletedList(generics.ListAPIView):
@@ -30,5 +31,16 @@ class TodoRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         user=self.request.user
         return Todo.objects.filter(user=user)
     
+class TodoUpdate(generics.UpdateAPIView):
+    serializer_class = TodoCompleteSerializers
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user=self.request.user
+        return Todo.objects.filter(user=user)
+    def perform_update(self, serializer):
+        serializer.instance.datecompleted=timezone.now()
+        serializer.save()
+
     # def perform_create(self, serializer):
     #     serializer.save(user=self.request.user)
